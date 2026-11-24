@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jacob Wilson — Engineering</title>
+<meta name="description" content="Engineering student at UTS Sydney. Robots, mechanisms, firmware and software, shown as drawings.">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230b0b0c'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%231d4cff'/%3E%3C/svg%3E">
+<script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+</head>
+<body data-page="home">
+<a class="sr-only" href="#main">Skip to content</a>
+<header class="nav"><nav class="nav-inner" aria-label="Main">
+  <a class="logo" href="index.html" aria-label="Home"><span class="mk">JW</span><span class="nm">Jacob Wilson</span></a>
+  <div class="nav-links">
+    <a class="nav-link nav-home" data-page="home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg><span class="t">Home</span></a>
+    <a class="nav-link" data-page="projects" href="projects.html">Projects</a>
+    <a class="nav-link" data-page="skills" href="skills.html">Skills</a>
+    <a class="nav-link" data-page="history" href="history.html">History</a>
+    <a class="nav-link" data-page="contact" href="contact.html">Contact</a>
+    <button class="key sound" type="button" aria-label="Click sound" title="Click sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z" fill="currentColor"/><path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg></button>
+  </div>
+</nav></header>
+<main id="main">
+<section class="hero">
+  <canvas class="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <div class="hero-top"><span class="kicker" id="kicker"></span><span class="label hero-hint">Tap the board</span></div>
+    <h1 class="name" id="name"></h1>
+    <div class="cta-grid">
+      <a class="key key--blue cta cta--main" href="projects.html">
+        <span class="label">Drawer 01 — Projects</span>
+        <span class="big">See the projects <span class="arrow">→</span></span>
+        <span class="sub" id="proj-count"></span>
+      </a>
+      <div class="cta-side">
+        <a class="key cta" href="skills.html"><span class="label">Drawer 02</span><span class="med">Skills <span class="arrow">→</span></span></a>
+        <a class="key cta" href="contact.html"><span class="label">Get in touch</span><span class="med">Contact <span class="arrow">→</span></span></a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<script src="js/data.js"></script>
+<script src="js/site.js"></script>
+<script>
+(() => {
+  const S = window.SITE, esc = window.JW.esc;
+  document.getElementById("kicker").textContent = S.kicker;
+  const parts = S.name.split(" ");
+  const first = parts.shift(), rest = parts.join(" ");
+  document.getElementById("name").innerHTML = `<span class="line"><span>${esc(first)}</span></span>` + (rest ? `<span class="line"><span>${esc(rest)}</span></span>` : "");
+  const n = window.PROJECTS.length;
+  const years = window.PROJECTS.map(p => +p.year).filter(Boolean);
+  document.getElementById("proj-count").textContent = `${n} builds` + (years.length ? `, ${Math.min(...years)}–${Math.max(...years)}` : "") + " · robots, mechanisms, software";
+})();
+</script>
+<script src="js/hero.js"></script>
+</body>
+</html>

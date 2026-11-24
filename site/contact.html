@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contact — Jacob Wilson</title>
+<meta name="description" content="Get in touch: GitHub, LinkedIn and email.">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230b0b0c'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%231d4cff'/%3E%3C/svg%3E">
+<script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+</head>
+<body data-page="contact">
+<a class="sr-only" href="#main">Skip to content</a>
+<header class="nav"><nav class="nav-inner" aria-label="Main">
+  <a class="logo" href="index.html" aria-label="Home"><span class="mk">JW</span><span class="nm">Jacob Wilson</span></a>
+  <div class="nav-links">
+    <a class="nav-link nav-home" data-page="home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg><span class="t">Home</span></a>
+    <a class="nav-link" data-page="projects" href="projects.html">Projects</a>
+    <a class="nav-link" data-page="skills" href="skills.html">Skills</a>
+    <a class="nav-link" data-page="history" href="history.html">History</a>
+    <a class="nav-link" data-page="contact" href="contact.html">Contact</a>
+    <button class="key sound" type="button" aria-label="Click sound" title="Click sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z" fill="currentColor"/><path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg></button>
+  </div>
+</nav></header>
+<main id="main" class="contact">
+  <figure class="headshot" style="margin:0"><img id="headshot" alt="Headshot" width="400" height="500"></figure>
+  <div>
+    <h1>Get in touch</h1>
+    <p class="lead">Fastest reply is email.</p>
+    <div class="links">
+      <a class="key link" id="gh" target="_blank" rel="noopener">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span>
+        <span class="txt"><span>GitHub</span><b id="gh-t"></b></span><span class="arrow">↗</span>
+      </a>
+      <a class="key link" id="li" target="_blank" rel="noopener">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h3.5v11H4zM5.75 3.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM10 9h3.3v1.6c.5-.9 1.7-1.9 3.6-1.9 3.6 0 4.3 2.3 4.3 5.4V20h-3.5v-5.2c0-1.3 0-2.9-1.8-2.9s-2.1 1.4-2.1 2.8V20H10z"/></svg></span>
+        <span class="txt"><span>LinkedIn</span><b id="li-t"></b></span><span class="arrow">↗</span>
+      </a>
+      <div class="link-row">
+        <a class="key key--blue link" id="em">
+          <span class="ico" style="background:#fff;color:#1d4cff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+          <span class="txt"><span style="color:rgba(255,255,255,.8)">Email</span><b id="em-t"></b></span>
+        </a>
+        <button class="key copy" id="copy" type="button">Copy</button>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="js/data.js"></script>
+<script src="js/site.js"></script>
+<script>
+(() => {
+  const S = window.SITE;
+  const short = (u) => u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+  const set = (id, href, text) => { const a = document.getElementById(id); a.href = href; document.getElementById(id + "-t").textContent = text; };
+  set("gh", S.github, short(S.github));
+  set("li", S.linkedin, short(S.linkedin));
+  set("em", "mailto:" + S.email, S.email);
+  const img = document.getElementById("headshot");
+  img.onerror = () => { img.onerror = null; img.src = window.JW.placeholder("HEADSHOT", "PHOTO PENDING", 800, 1000); };
+  img.src = S.headshot;
+  const btn = document.getElementById("copy");
+  btn.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(S.email); } catch { const t = Object.assign(document.createElement("textarea"), { value: S.email }); document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); }
+    btn.textContent = "Copied"; btn.classList.add("done"); window.JW.toast("Email copied");
+    setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("done"); }, 1600);
+  });
+})();
+</script>
+</body>
+</html>
