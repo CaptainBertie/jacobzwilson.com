@@ -21,7 +21,16 @@
   p { margin: 0; font-size: clamp(15px, 1.3vw, 19px); font-weight: 500; color: var(--ink-2); }
   h1 { margin: clamp(6px, 1.4vh, 18px) 0 0; font-family: var(--serif); font-weight: 400;
     font-size: clamp(54px, min(11vw, 23svh), 200px); line-height: .9; letter-spacing: -.04em; }
-  h1 i { font-style: normal; color: var(--clay); }
+  h1 i { font-style: normal; color: var(--clay); display: inline-block; transform-origin: 50% 90%; }
+  h1 i.jump { animation: jump .6s cubic-bezier(.32,.72,0,1); }
+  @keyframes jump {
+    0%   { transform: translateY(0) scale(1, 1); }
+    12%  { transform: translateY(0) scale(1.25, .75); }
+    45%  { transform: translateY(-.55em) scale(.9, 1.1); }
+    80%  { transform: translateY(0) scale(1.2, .8); }
+    100% { transform: translateY(0) scale(1, 1); }
+  }
+  body { cursor: pointer; -webkit-user-select: none; user-select: none; }
 </style>
 </head>
 <body>
@@ -29,5 +38,13 @@
   <p>Jacob Wilson</p>
   <h1>Coming soon<i>.</i></h1>
 </main>
+<script>
+  const dot = document.querySelector("h1 i");
+  addEventListener("pointerdown", () => {
+    dot.classList.remove("jump");
+    void dot.offsetWidth; // restart the animation on every click
+    dot.classList.add("jump");
+  });
+</script>
 </body>
 </html>
