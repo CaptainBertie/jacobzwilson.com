@@ -6,13 +6,15 @@
   const tl = document.querySelector(".tl");
   if (!tl) return;
   const H = window.HISTORY;
-  const titleOf = (h) => (h.kind === "move" && (h.from || h.to) ? `${h.from || "?"} → ${h.to || "?"}` : h.title);
+  // Unknown details are left out rather than shown as "TBC" or "?".
+  const known = (v) => v && v !== "TBC" && v !== "?";
+  const titleOf = (h) => (h.kind === "move" ? (known(h.from) && known(h.to) ? `${h.from} → ${h.to}` : "Move") : h.title);
 
   tl.querySelector(".tl-list").innerHTML = H.map((h, i) => `
     <li class="stop" data-side="${i % 2 ? "r" : "l"}">
       <span class="stop-dot" aria-hidden="true"></span>
       <article class="tl-card">
-        <div class="tl-when">${esc(h.when)}</div>
+        ${known(h.when) ? `<div class="tl-when">${esc(h.when)}</div>` : ""}
         <h2 class="tl-title">${esc(titleOf(h))}</h2>
         ${h.place ? `<div class="tl-place">${esc(h.place)}</div>` : ""}
         ${h.note ? `<p class="tl-note">${esc(h.note)}</p>` : ""}
@@ -83,9 +85,10 @@
       if (idx > current && current !== -2) window.JW.tick(0.4);
       current = idx;
       const h = H[Math.max(0, idx)];
-      nowWhen.textContent = h.when;
+      nowWhen.textContent = known(h.when) ? h.when : titleOf(h);
+      nowWhen.classList.toggle("is-title", !known(h.when));
       nowWhen.classList.remove("flip"); void nowWhen.offsetWidth; nowWhen.classList.add("flip");
-      nowTitle.textContent = titleOf(h);
+      nowTitle.textContent = known(h.when) ? titleOf(h) : (known(h.place) ? h.place : "");
     }
   }
 
