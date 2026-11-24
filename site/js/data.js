@@ -125,6 +125,10 @@ window.PROJECTS = [
     title: "Tri-Filter",
     year: null,
     tags: [],
+    cover: "assets/projects/tri-filter/black-3q.jpg",
+    gallery: [
+      {"src": "assets/projects/tri-filter/black-3q.jpg", "w": 1537, "h": 1023},
+    ],
   },
   {
     slug: "acacia-financial",
@@ -145,6 +149,11 @@ window.PROJECTS = [
     year: "2026",
     tags: ["Mechanical", "Electronics"],
     description: ["A pan-and-tilt rig driven by stepper motors through planetary gearboxes, with flywheel motors run from an L298N driver and an Arduino CNC shield."],
+    cover: "assets/projects/d-sentry/black-front.jpg",
+    gallery: [
+      {"src": "assets/projects/d-sentry/black-front.jpg", "w": 1537, "h": 1023},
+      {"src": "assets/projects/d-sentry/black-switches.jpg", "w": 1537, "h": 1023},
+    ],
   },
 ];
 
