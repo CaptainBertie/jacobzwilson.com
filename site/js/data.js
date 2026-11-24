@@ -153,8 +153,8 @@ window.PROJECTS = [
     description: ["A pan-and-tilt rig driven by stepper motors through planetary gearboxes, with flywheel motors run from an L298N driver and an Arduino CNC shield."],
     cover: "assets/projects/d-sentry/ai-1.jpg",
     hero: [
-      {"src": "assets/projects/d-sentry/ai-1.jpg", "w": 2000, "h": 1501},
       {"src": "assets/projects/d-sentry/ai-2.jpg", "w": 2000, "h": 1501},
+      {"src": "assets/projects/d-sentry/ai-1.jpg", "w": 2000, "h": 1501},
       {"src": "assets/projects/d-sentry/ai-3.jpg", "w": 2000, "h": 1501},
     ],
   },
