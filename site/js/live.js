@@ -55,6 +55,28 @@
     const [t0, v0] = path[lo], [t1, v1] = path[hi];
     return v0 + ((v1 - v0) * (t - t0)) / (t1 - t0 || 1);
   }
+  /* Kalshi quotes move in whole-cent steps and Bitcoin ticks every second, so the raw paths are
+     stairs and fuzz. For drawing only, resample onto an even grid and blur with a Gaussian of
+     `sigma` ms; the blur fades out over the last 2 sigma so the line still lands exactly on the
+     newest value. The numbers above the chart always read the raw path. */
+  function soften(path, sigma) {
+    if (path.length < 3 || reduce) return path;
+    const t0 = path[0][0], t1 = path[path.length - 1][0], span = t1 - t0;
+    if (span <= 0) return path;
+    const step = Math.max(1000, span / 360), n = Math.floor(span / step) + 1;
+    const grid = [];
+    for (let i = 0; i < n; i++) grid.push(at(path, t0 + i * step));
+    grid.push(path[path.length - 1][1]);
+    const ts = grid.map((_, i) => (i < n ? t0 + i * step : t1));
+    const r = Math.ceil((3 * sigma) / step), wts = [];
+    for (let k = -r; k <= r; k++) wts.push(Math.exp(-((k * step) ** 2) / (2 * sigma * sigma)));
+    return grid.map((v, i) => {
+      let a = 0, wsum = 0;
+      for (let k = -r; k <= r; k++) { const j = i + k; if (j < 0 || j >= grid.length) continue; a += grid[j] * wts[k + r]; wsum += wts[k + r]; }
+      const mix = Math.min(1, (t1 - ts[i]) / (2 * sigma));
+      return [ts[i], v + (a / wsum - v) * mix];
+    });
+  }
   function merge(into, pts) {
     if (!pts || !pts.length) return;
     if (!into.length || pts[0][0] > into[into.length - 1][0]) { into.push(...pts); return; }
@@ -89,16 +111,15 @@
           <figcaption class="live-q" data-v="q">Bitcoin, next 15 minutes</figcaption>
           <div class="card-tools">
             <button class="chip-btn" data-live hidden data-press>Back to live</button>
-            <div class="seg" role="group" aria-label="Chart shows"><button data-mode="price" aria-pressed="true" data-press>Price</button><button data-mode="chance" aria-pressed="false" data-press>Chance</button></div>
           </div>
         </div>
-        <div class="readouts">
-          <div class="ro"><div class="ro-k">Bitcoin</div><div class="ro-v" data-v="btc">—</div><div class="ro-d" data-v="gap"></div></div>
-          <div class="ro"><div class="ro-k">Strike</div><div class="ro-v" data-v="strike">—</div><div class="ro-d" data-v="left"></div></div>
-          <div class="ro"><div class="ro-k">Chance of yes</div><div class="ro-v" data-v="chance">—</div><div class="ro-d" data-v="when"></div></div>
+        <div class="readouts readouts--market">
+          <div class="ro ro--hero"><div class="ro-k">Chance of yes · <span data-v="when"></span></div><div class="ro-v" data-v="chance">—</div><div class="ro-d" data-v="lean"></div></div>
+          <div class="ro ro--small"><div class="ro-k"><i class="key key--btc"></i>Bitcoin</div><div class="ro-v" data-v="btc">—</div><div class="ro-d" data-v="gap"></div></div>
+          <div class="ro ro--small"><div class="ro-k">Strike</div><div class="ro-v" data-v="strike">—</div><div class="ro-d" data-v="left"></div></div>
         </div>
         <div class="plot plot--market"><svg class="chart" aria-hidden="true"></svg><div class="tip" hidden></div></div>
-        <div class="chart-x"><span data-v="t0"></span><span class="legend"><i class="buy-key"></i>Bot bought</span><span data-v="t1"></span></div>
+        <div class="chart-x chart-x--market"><span data-v="t0"></span><span class="legend"><span><i class="key key--chance"></i>Chance of yes</span><span><i class="key key--btc"></i>Bitcoin vs strike</span><span><i class="buy-key"></i>Bot bought</span></span><span data-v="t1"></span></div>
       </figure>
       <div class="live-recent" aria-label="Recent windows"></div>
       <figure class="live-card live-bank" hidden>
@@ -114,7 +135,7 @@
         <div class="chart-x chart-x--ticks" data-v="bx"></div>
       </figure>`;
     const $ = (k) => root.querySelector(`[data-v="${k}"]`);
-    const S = { windows: new Map(), bot: {}, since: 0, rev: null, curve: [], mode: "price", pinned: null, range: 0, skew: 0 };
+    const S = { windows: new Map(), bot: {}, since: 0, rev: null, curve: [], pinned: null, range: 0, skew: 0 };
     let busy = false, timer = null, ctimer = null, raf = 0, inView = true;
     const kick = () => { if (!raf && running()) raf = requestAnimationFrame(frame); };
 
@@ -208,81 +229,90 @@
       return from.v + (last - from.v) * ease(p);
     }
 
+    /* One chart, two scales. Chance of yes is the bold line on 0-100%. Bitcoin is the faint
+       line on a dollar scale centred on the strike, so "Bitcoin at the strike" sits exactly on
+       the 50% line and both lines read the same way: up = yes. Where they part, the market
+       is pricing something the last tick of Bitcoin alone does not say. */
     function drawMarket(w) {
       const W = mPlot.clientWidth, H = mPlot.clientHeight;
       if (!W || !H) return;
       mSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-      const padR = 70, padT = 16, padB = 10, cw = W - padR;
+      const narrow = W < 520, padL = narrow ? 34 : 42, padR = narrow ? 62 : 78, padT = 16, padB = 10, cw = W - padL - padR;
       const t = now(), live = !S.pinned && t < w.close_ms;
       const tHead = live ? clamp(t - 1200, w.open_ms, w.close_ms) : w.close_ms; // a beat behind, so each new point eases in
-      const price = S.mode === "price";
       const inWin = (p) => p[0] >= w.open_ms - 2000 && p[0] <= tHead;
       const bRaw = w.btc.filter(inWin), yRaw = w.yes.filter(inWin);
       const bHead = head(bRaw, w.btcFrom, live), yHead = head(yRaw, w.yesFrom, live);
       w.shownBtc = bHead; w.shownYes = yHead;
-      const raw = price ? bRaw : yRaw, hv = price ? bHead : yHead;
-      const path = raw.slice(); if (live && path.length) path.push([tHead, hv]);
+      const cPath = yRaw.slice(); if (live && cPath.length) cPath.push([tHead, yHead]);
+      const bPath = bRaw.slice(); if (live && bPath.length) bPath.push([tHead, bHead]);
 
-      // y domain
-      let lo, hi;
-      if (price) {
-        const vals = path.map((p) => p[1]); if (w.strike != null) vals.push(w.strike);
-        lo = Math.min(...vals); hi = Math.max(...vals);
-        const span = Math.max(hi - lo, 40), mid = (hi + lo) / 2;
-        lo = mid - span * 0.62; hi = mid + span * 0.62;
-      } else { lo = 0; hi = 100; }
-      if (!isFinite(lo) || !isFinite(hi)) { mSvg.replaceChildren(); return; }
-      if (dom.mode !== S.mode || dom.ticker !== w.ticker || dom.lo == null || reduce) Object.assign(dom, { lo, hi, mode: S.mode, ticker: w.ticker });
-      else { dom.lo += (lo - dom.lo) * 0.1; dom.hi += (hi - dom.hi) * 0.1; }
-      const x = (tt) => ((tt - w.open_ms) / (w.close_ms - w.open_ms)) * cw;
-      const y = (v) => padT + (1 - (v - dom.lo) / (dom.hi - dom.lo)) * (H - padT - padB);
-      const ref = price ? w.strike : 50;
+      // the dollar half-range G: the strike sits mid-chart and the furthest price reaches 70% of the way out
+      const K = w.strike;
+      let G = 40;
+      if (K != null) for (const p of bPath) G = Math.max(G, Math.abs(p[1] - K) / 0.7);
+      if (dom.ticker !== w.ticker || dom.G == null || reduce) Object.assign(dom, { G, ticker: w.ticker });
+      else dom.G += (G - dom.G) * 0.1;
+      const x = (tt) => padL + ((tt - w.open_ms) / (w.close_ms - w.open_ms)) * cw;
+      const y = (c) => padT + (1 - c / 100) * (H - padT - padB);
+      const yb = (v) => y(50 + ((v - K) / dom.G) * 50);
+      const X0 = padL, X1 = padL + cw, mid = y(50);
 
       mSvg.replaceChildren();
-      for (const v of price ? niceTicks(dom.lo, dom.hi, 4) : [0, 25, 50, 75, 100]) {
-        const Y = y(v); if (Y < padT - 2 || Y > H - padB + 2) continue;
-        mSvg.append(mk("line", { x1: 0, x2: cw, y1: Y, y2: Y, class: "g" }));
-        const tx = mk("text", { x: cw + 10, y: Y + 4, class: "axis" }); tx.textContent = price ? usdShort(v) : v + "%"; mSvg.append(tx);
+      for (const c of [0, 25, 50, 75, 100]) {
+        mSvg.append(mk("line", { x1: X0, x2: X1, y1: y(c), y2: y(c), class: c === 50 ? "g g--mid" : "g" }));
+        const tx = mk("text", { x: X0 - 8, y: y(c) + 4, class: "axis axis--chance", "text-anchor": "end" }); tx.textContent = c + "%"; mSvg.append(tx);
       }
-      const pts = thin(path, x, 2).map((p) => [x(p[0]), y(p[1])]);
-      const line = pts.length > 1 ? smooth(pts) : "";
-      if (ref != null) {
-        const R = y(ref);
-        if (line) {
-          const last = pts[pts.length - 1], first = pts[0];
-          const defs = mk("defs");
-          const up = mk("clipPath", { id: "acu" }); up.append(mk("rect", { x: 0, y: 0, width: cw, height: clamp(R, 0, H) }));
-          const dn = mk("clipPath", { id: "acd" }); dn.append(mk("rect", { x: 0, y: clamp(R, 0, H), width: cw, height: H }));
-          defs.append(up, dn); mSvg.append(defs);
-          const area = `${line}L${last[0].toFixed(1)},${R.toFixed(1)}L${first[0].toFixed(1)},${R.toFixed(1)}Z`;
-          mSvg.append(mk("path", { d: area, class: "fill-up", "clip-path": "url(#acu)" }));
-          mSvg.append(mk("path", { d: area, class: "fill-dn", "clip-path": "url(#acd)" }));
+      if (K != null) {
+        const step = niceTicks(0, dom.G, 2)[1] || dom.G / 2;
+        for (const k of [-2, -1, 1, 2]) {
+          const v = K + k * step, Y = yb(v); if (Y < padT || Y > H - padB) continue;
+          const tx = mk("text", { x: X1 + 10, y: Y + 4, class: "axis" }); tx.textContent = (k > 0 ? "+" : "−") + usdShort(Math.abs(k * step)); mSvg.append(tx);
         }
-        mSvg.append(mk("line", { x1: 0, x2: cw, y1: R, y2: R, class: "strike" }));
-        const lab = mk("text", { x: 4, y: R - 7, class: "strike-label" });
-        lab.textContent = price ? "Strike" : "50%"; mSvg.append(lab);
+        const st = mk("text", { x: X1 + 10, y: mid + 4, class: "axis axis--strike" }); st.textContent = "Strike"; mSvg.append(st);
       }
-      if (line) mSvg.append(mk("path", { d: line, class: "line line--market" }));
-      if (w.bought_ms && w.bought_ms >= w.open_ms && w.bought_ms <= tHead && path.length) {
-        const bx = x(w.bought_ms), by = y(at(path, w.bought_ms)), left = bx > cw - 90;
+
+      // chance: shaded toward yes (above 50%) or no (below), then the bold line
+      const cSoft = soften(cPath, 7000), bSoft = soften(bPath, 5000);
+      const cp = thin(cSoft, x, 2).map((p) => [x(p[0]), y(p[1])]);
+      const cLine = cp.length > 1 ? smooth(cp) : "";
+      if (cLine) {
+        const last = cp[cp.length - 1], first = cp[0], defs = mk("defs");
+        const up = mk("clipPath", { id: "acu" }); up.append(mk("rect", { x: X0, y: 0, width: cw, height: mid }));
+        const dn = mk("clipPath", { id: "acd" }); dn.append(mk("rect", { x: X0, y: mid, width: cw, height: H }));
+        defs.append(up, dn); mSvg.append(defs);
+        const area = `${cLine}L${last[0].toFixed(1)},${mid.toFixed(1)}L${first[0].toFixed(1)},${mid.toFixed(1)}Z`;
+        mSvg.append(mk("path", { d: area, class: "fill-up", "clip-path": "url(#acu)" }));
+        mSvg.append(mk("path", { d: area, class: "fill-dn", "clip-path": "url(#acd)" }));
+      }
+      // Bitcoin: faint, under the chance line
+      if (K != null && bPath.length > 1) mSvg.append(mk("path", { d: smooth(thin(bSoft, x, 2).map((p) => [x(p[0]), yb(p[1])])), class: "line line--btc" }));
+      if (cLine) mSvg.append(mk("path", { d: cLine, class: "line line--market" }));
+
+      if (w.bought_ms && w.bought_ms >= w.open_ms && w.bought_ms <= tHead && cPath.length) {
+        const bx = x(w.bought_ms), by = y(at(cSoft, w.bought_ms)), left = bx > X1 - 90;
         mSvg.append(mk("line", { x1: bx, x2: bx, y1: padT, y2: H - padB, class: "buy-rule" }));
         mSvg.append(mk("circle", { cx: bx, cy: by, r: 6, class: "buy-dot" }));
-        const bt = mk("text", { x: bx + (left ? -9 : 9), y: padT + 10, class: "buy-label", "text-anchor": left ? "end" : "start" }); bt.textContent = "Bot bought"; mSvg.append(bt);
+        const bt = mk("text", { x: bx + (left ? -9 : 9), y: H - padB - 8, class: "buy-label", "text-anchor": left ? "end" : "start" }); bt.textContent = "Bot bought"; mSvg.append(bt);
       }
-      if (pts.length) {
-        const [hx, hy] = pts[pts.length - 1];
-        if (live) mSvg.append(mk("circle", { cx: hx, cy: hy, r: 9, class: "head-halo" }));
-        mSvg.append(mk("circle", { cx: hx, cy: hy, r: 4, class: "head" }));
+      if (K != null && bPath.length) mSvg.append(mk("circle", { cx: x(bPath[bPath.length - 1][0]), cy: yb(bPath[bPath.length - 1][1]), r: 3, class: "head head--btc" }));
+      if (cp.length) {
+        const [hx, hy] = cp[cp.length - 1];
+        if (live) mSvg.append(mk("circle", { cx: hx, cy: hy, r: 10, class: "head-halo" }));
+        mSvg.append(mk("circle", { cx: hx, cy: hy, r: 4.5, class: "head" }));
       }
 
       // readouts: the moment under the pointer, or the newest
       const hovering = hoverX != null;
-      const tr = hovering ? Math.min(w.open_ms + (clamp(hoverX, 0, cw) / cw) * (w.close_ms - w.open_ms), tHead) : tHead;
+      const tr = hovering ? Math.min(w.open_ms + (clamp(hoverX - X0, 0, cw) / cw) * (w.close_ms - w.open_ms), tHead) : tHead;
       const b = hovering ? at(bRaw, tr) : bHead, c = hovering ? at(yRaw, tr) : yHead;
+      const ch = $("chance");
+      ch.textContent = c == null ? "—" : c >= 99.5 ? ">99%" : c < 0.5 ? "<1%" : Math.round(c) + "%";
+      ch.className = "ro-v " + (c == null ? "" : c >= 50 ? "is-up" : "is-dn");
+      $("lean").textContent = c == null ? "" : c >= 50 ? "Market leans yes" : "Market leans no";
       $("btc").textContent = b != null ? usd(b) : "—";
-      $("strike").textContent = w.strike != null ? usd(w.strike) : "—";
-      $("chance").textContent = c == null ? "—" : c >= 99.5 ? ">99%" : c < 0.5 ? "<1%" : Math.round(c) + "%";
-      const gap = b != null && w.strike != null ? b - w.strike : null, g = $("gap");
+      $("strike").textContent = K != null ? usd(K) : "—";
+      const gap = b != null && K != null ? b - K : null, g = $("gap");
       g.textContent = gap != null ? `${gap >= 0 ? "▲" : "▼"} ${usd(Math.abs(gap))} ${gap >= 0 ? "above" : "below"}` : "";
       g.className = "ro-d " + (gap == null ? "" : gap >= 0 ? "is-up" : "is-dn");
       $("when").textContent = hovering ? tm(tr, true) : live ? "Now" : w.result ? `Settled ${w.result}` : "Settling";
@@ -291,23 +321,19 @@
         lastTick = sec;
         const left = w.close_ms - t;
         $("left").textContent = S.pinned ? `Closed ${tm(w.close_ms)}` : left > 0 ? `${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, "0")} left` : "Settling";
-        $("q").textContent = w.strike != null ? `Bitcoin above ${usd(w.strike)} at ${tm(w.close_ms)}?` : `Bitcoin at ${tm(w.close_ms)}`;
+        $("q").textContent = K != null ? `Bitcoin above ${usd(K)} at ${tm(w.close_ms)}?` : `Bitcoin at ${tm(w.close_ms)}`;
         $("t0").textContent = tm(w.open_ms); $("t1").textContent = tm(w.close_ms);
       }
       if (hovering && tr >= w.open_ms) {
-        const cx = x(tr), v = at(path, tr);
+        const cx = x(tr), cv = at(cSoft, tr), bv = K != null ? at(bSoft, tr) : null;
         mSvg.append(mk("line", { x1: cx, x2: cx, y1: padT, y2: H - padB, class: "cross" }));
-        if (v != null) mSvg.append(mk("circle", { cx, cy: y(v), r: 4.5, class: "cross-dot" }));
-        mTip.hidden = false; mTip.textContent = tm(tr, true); mTip.style.left = `${clamp(cx, 34, cw - 34)}px`;
+        if (bv != null) mSvg.append(mk("circle", { cx, cy: yb(bv), r: 3.5, class: "cross-dot cross-dot--btc" }));
+        if (cv != null) mSvg.append(mk("circle", { cx, cy: y(cv), r: 5, class: "cross-dot" }));
+        mTip.hidden = false; mTip.textContent = tm(tr, true); mTip.style.left = `${clamp(cx, X0 + 30, X1 - 30)}px`;
       } else mTip.hidden = true;
     }
     hover(mPlot, (X) => { hoverX = X; if (!raf) raf = requestAnimationFrame(frame); }, () => { hoverX = null; if (!raf) raf = requestAnimationFrame(frame); });
 
-    root.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
-      S.mode = b.dataset.mode; tick(0.6);
-      root.querySelectorAll("[data-mode]").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
-      kick();
-    }));
     root.querySelector("[data-live]").addEventListener("click", () => { tick(0.6); pin(null); });
     function pin(t) {
       S.pinned = t;
@@ -322,7 +348,7 @@
       const list = sorted().filter((w) => w.close_ms <= t).slice(-4).reverse();
       if (!list.length) { box.hidden = true; return; }
       box.hidden = false;
-      const sig = list.map((w) => `${w.ticker}${w.result}${w.bought_ms}${w.btc.length}`).join("|");
+      const sig = list.map((w) => `${w.ticker}${w.result}${w.bought_ms}${w.btc.length}${w.yes.length}`).join("|");
       if (box.dataset.sig === sig) return;
       box.dataset.sig = sig;
       box.innerHTML = list.map((w) => `<button class="wmini" data-t="${w.ticker}" aria-pressed="${S.pinned === w.ticker}" data-press aria-label="Show the window that closed at ${tm(w.close_ms)}"><span class="wmini-plot"><svg class="chart" viewBox="0 0 160 56" preserveAspectRatio="none" aria-hidden="true"></svg></span><span class="wmini-cap"><span>${tm(w.close_ms)}</span><span class="${w.result === "yes" ? "is-up" : w.result === "no" ? "is-dn" : ""}">${w.result ? (w.result === "yes" ? "Yes" : "No") : "…"}</span></span></button>`).join("");
@@ -333,16 +359,19 @@
       tick(0.6); pin(S.pinned === b.dataset.t ? null : b.dataset.t);
     });
     function mini(svg, w) {
-      const W = 160, H = 56, pad = 5, path = w.btc.filter((p) => p[0] >= w.open_ms - 2000 && p[0] <= w.close_ms);
-      if (path.length < 2) return;
-      const vals = path.map((p) => p[1]).concat(w.strike != null ? [w.strike] : []);
-      let lo = Math.min(...vals), hi = Math.max(...vals); const span = Math.max(hi - lo, 20), mid = (lo + hi) / 2; lo = mid - span * 0.6; hi = mid + span * 0.6;
-      const x = (t) => ((t - w.open_ms) / (w.close_ms - w.open_ms)) * W, y = (v) => pad + (1 - (v - lo) / (hi - lo)) * (H - 2 * pad);
-      if (w.strike != null) svg.append(mk("line", { x1: 0, x2: W, y1: y(w.strike), y2: y(w.strike), class: "strike" }));
-      svg.append(mk("path", { d: smooth(thin(path, x, 2).map((p) => [x(p[0]), y(p[1])])), class: "line line--mini" }));
+      const W = 160, H = 56, pad = 5, inWin = (p) => p[0] >= w.open_ms - 2000 && p[0] <= w.close_ms;
+      const yes = w.yes.filter(inWin), btc = w.btc.filter(inWin), K = w.strike;
+      if (yes.length < 2) return;
+      const x = (t) => ((t - w.open_ms) / (w.close_ms - w.open_ms)) * W, y = (c) => pad + (1 - c / 100) * (H - 2 * pad);
+      svg.append(mk("line", { x1: 0, x2: W, y1: y(50), y2: y(50), class: "g g--mid" }));
+      if (K != null && btc.length > 1) {
+        let G = 20; for (const p of btc) G = Math.max(G, Math.abs(p[1] - K) / 0.7);
+        svg.append(mk("path", { d: smooth(thin(soften(btc, 12000), x, 2).map((p) => [x(p[0]), y(50 + ((p[1] - K) / G) * 50)])), class: "line line--btc line--mini" }));
+      }
+      svg.append(mk("path", { d: smooth(thin(soften(yes, 15000), x, 2).map((p) => [x(p[0]), y(p[1])])), class: "line line--mini" }));
       if (w.bought_ms && w.bought_ms >= w.open_ms && w.bought_ms <= w.close_ms) {
         const d = document.createElement("i"); d.className = "mini-buy";
-        d.style.left = `${(x(w.bought_ms) / W) * 100}%`; d.style.top = `${(y(at(path, w.bought_ms)) / H) * 100}%`;
+        d.style.left = `${(x(w.bought_ms) / W) * 100}%`; d.style.top = `${(y(at(yes, w.bought_ms)) / H) * 100}%`;
         svg.after(d);
       }
     }
