@@ -47,8 +47,8 @@
     const big = i === 0 || (isProjects && it.featured);
     return `<a class="tile${big ? " tile--wide" : ""}${cover ? " tile--media" : ` tile--${TONES[i % TONES.length]}`}" href="#${it.slug}" data-press data-i="${i}">
       ${cover ? `<img src="${esc(cover)}" alt="" loading="${i < 4 ? "eager" : "lazy"}">` : ""}
-      ${!cover && it.logo ? `<img class="tile-logo" src="${esc(it.logo)}" alt="">` : ""}
-      ${it.video && cover ? `<video muted loop playsinline preload="none" data-src="${esc(it.video.src)}" aria-hidden="true"></video>` : ""}
+      ${it.logo ? `<img class="tile-logo" src="${esc(it.logo)}" alt="">` : ""}
+      ${(it.tileVideo || it.video) && cover ? `<video muted loop playsinline preload="none" data-src="${esc(it.tileVideo || it.video.src)}" aria-hidden="true"></video>` : ""}
       <span class="tile-body"><span class="tile-meta">${tagsH(it)}</span><span class="tile-title">${esc(it.title)}</span></span>
       <span class="tile-go" aria-hidden="true">${icon.arrow}</span>
     </a>`;

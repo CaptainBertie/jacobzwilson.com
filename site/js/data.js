@@ -120,6 +120,8 @@ window.PROJECTS = [
     year: "2026",
     tags: ["Software"],
     logo: "assets/projects/tradie-tech/logo.svg",
+    cover: "assets/projects/tradie-tech/backer-poster.jpg",
+    tileVideo: "assets/projects/tradie-tech/backer.mp4",
     description: ["A web app for tradespeople, built in a design sprint around one job: turning a customer's phone call into a booked job with one tap."],
   },
   {
