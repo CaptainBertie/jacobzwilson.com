@@ -56,7 +56,7 @@ window.PROJECTS = [
     year: "2023",
     tags: ["Charged Up", "Team 8840"],
     featured: true,
-    video: {"src": "assets/projects/frc-2023/curated/montage.mp4", "poster": "assets/projects/frc-2023/curated/montage-poster.jpg", "w": 864, "h": 1080},
+    video: {"src": "assets/projects/frc-2023/curated/bay-robotics-hero.mp4", "poster": "assets/projects/frc-2023/curated/bay-robotics-hero-poster.jpg", "w": 1280, "h": 720},
     cover: "assets/projects/frc-2023/curated/team-shirts.jpg",
     gallery: [
       {"src": "assets/projects/frc-2023/curated/team-shirts.jpg", "w": 1600, "h": 1200},

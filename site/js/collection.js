@@ -104,7 +104,7 @@
     root.innerHTML = `<article class="item${portrait ? " item--portrait" : ""}${it.video ? "" : " item--novideo"}" style="--ar:${ratio(it.video).toFixed(4)}">
         ${portrait
           ? `<div class="item-split"><div class="item-media">${videoH(it.video)}</div><div class="item-text">${head}${body}</div></div>`
-          : `${head}${videoH(it.video, "media--hero")}${body ? `<div class="item-text item-text--cols">${body}</div>` : ""}`}
+          : `${head}${videoH(it.video, ratio(it.video) > 1.3 ? "media--hero media--wide" : "media--hero")}${body ? `<div class="item-text item-text--cols">${body}</div>` : ""}`}
         ${empty ? `<p class="soon">Coming soon</p>` : ""}
         ${galleryH(g)}
         ${pagerH(i)}
