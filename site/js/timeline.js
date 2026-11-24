@@ -2,19 +2,18 @@
    As you scroll, a pen draws the path, each dot lights when the pen reaches it,
    and the sticky panel shows the stop you are on. */
 (() => {
-  const { esc, pad } = window.JW;
+  const { esc } = window.JW;
   const tl = document.querySelector(".tl");
   if (!tl) return;
   const H = window.HISTORY;
-  const kinds = { move: "Move", school: "School", uni: "University", milestone: "Milestone" };
+  const titleOf = (h) => (h.kind === "move" && (h.from || h.to) ? `${h.from || "?"} → ${h.to || "?"}` : h.title);
 
   tl.querySelector(".tl-list").innerHTML = H.map((h, i) => `
     <li class="stop" data-side="${i % 2 ? "r" : "l"}">
       <span class="stop-dot" aria-hidden="true"></span>
       <article class="tl-card">
-        <div class="tl-when"><span>${esc(h.when)}</span><span class="tl-kind">${esc(kinds[h.kind] || h.kind)}</span></div>
-        <h2 class="tl-title">${esc(h.title)}</h2>
-        ${h.kind === "move" && (h.from || h.to) ? `<div class="route"><span class="pin">${esc(h.from || "?")}</span><span class="go" aria-label="to"></span><span class="pin">${esc(h.to || "?")}</span></div>` : ""}
+        <div class="tl-when">${esc(h.when)}</div>
+        <h2 class="tl-title">${esc(titleOf(h))}</h2>
         ${h.place ? `<div class="tl-place">${esc(h.place)}</div>` : ""}
         ${h.note ? `<p class="tl-note">${esc(h.note)}</p>` : ""}
       </article>
@@ -22,8 +21,7 @@
 
   const svg = tl.querySelector(".tl-svg"), guide = tl.querySelector(".tl-guide"), ink = tl.querySelector(".tl-ink"), pen = tl.querySelector(".tl-pen");
   const stops = [...tl.querySelectorAll(".stop")];
-  const nowN = document.querySelector(".now-n"), nowWhen = document.querySelector(".now-when span"), nowTitle = document.querySelector(".now-title"), bar = document.querySelector(".now-bar");
-  document.querySelector(".now-of").textContent = pad(H.length);
+  const nowWhen = document.querySelector(".now-when span"), nowTitle = document.querySelector(".now-title"), bar = document.querySelector(".now-bar");
   bar.innerHTML = H.map(() => "<i></i>").join("");
   const segs = [...bar.children];
 
@@ -85,10 +83,9 @@
       if (idx > current && current !== -2) window.JW.tick(0.4);
       current = idx;
       const h = H[Math.max(0, idx)];
-      nowN.textContent = pad(Math.max(0, idx) + 1);
       nowWhen.textContent = h.when;
       nowWhen.classList.remove("flip"); void nowWhen.offsetWidth; nowWhen.classList.add("flip");
-      nowTitle.textContent = h.kind === "move" && (h.from || h.to) ? `${h.from || "?"} → ${h.to || "?"}` : h.title;
+      nowTitle.textContent = titleOf(h);
     }
   }
 

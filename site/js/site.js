@@ -14,31 +14,31 @@
       ctx ||= new (window.AudioContext || window.webkitAudioContext)();
       if (ctx.state === "suspended") ctx.resume();
       if (!buf) {
-        const len = Math.floor(ctx.sampleRate * 0.03);
+        const len = Math.floor(ctx.sampleRate * 0.02);
         buf = ctx.createBuffer(1, len, ctx.sampleRate);
         const d = buf.getChannelData(0);
-        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 8);
       }
       const src = ctx.createBufferSource();
       src.buffer = buf;
-      src.playbackRate.value = 0.9 + Math.random() * 0.2;
+      src.playbackRate.value = 0.95 + Math.random() * 0.1;
       const bp = ctx.createBiquadFilter();
-      bp.type = "bandpass"; bp.frequency.value = 2600; bp.Q.value = 0.9;
+      bp.type = "bandpass"; bp.frequency.value = 3400; bp.Q.value = 1.1;
       const g = ctx.createGain();
-      g.gain.value = 0.55 * strength;
+      g.gain.value = 0.4 * strength;
       src.connect(bp).connect(g).connect(ctx.destination);
       src.start();
     } catch {}
   }
-  function buzz() { try { navigator.vibrate && navigator.vibrate(8); } catch {} }
+  function buzz() { try { navigator.vibrate && navigator.vibrate(6); } catch {} }
 
-  /* ---- press feedback on anything clicky ---- */
-  const PRESSABLE = ".key, .logo, .nav-link, .drawer-item, .shot, [data-press]";
+  /* ---- press feedback on anything tappable ---- */
+  const PRESSABLE = ".key, .nav-link, .nav-icon, .drawer-item, .shot, .seg button, .row-link, [data-press]";
   let pressed = null, pressedAt = 0;
   function release() {
     if (!pressed) return;
     const el = pressed; pressed = null;
-    const wait = Math.max(0, 90 - (performance.now() - pressedAt)); // keep the press visible on fast taps
+    const wait = Math.max(0, 80 - (performance.now() - pressedAt)); // keep the press visible on fast taps
     setTimeout(() => el.classList.remove("is-pressed"), wait);
   }
   document.addEventListener("pointerdown", (e) => {
@@ -50,8 +50,6 @@
     tick(); buzz();
   });
   ["pointerup", "pointercancel", "dragstart"].forEach((t) => document.addEventListener(t, release));
-  document.addEventListener("pointerleave", release);
-  // keyboard activation gets the same feel
   document.addEventListener("keydown", (e) => {
     if ((e.key === "Enter" || e.key === " ") && e.target.matches?.(PRESSABLE) && !e.repeat) {
       e.target.classList.add("is-pressed"); tick();
@@ -61,8 +59,8 @@
 
   /* ---- nav ---- */
   const page = document.body.dataset.page;
-  document.querySelectorAll(".nav-link").forEach((a) => {
-    if (a.dataset.page === page) a.setAttribute("aria-current", "page");
+  document.querySelectorAll("[data-page]").forEach((a) => {
+    if (a !== document.body && a.dataset.page === page) a.setAttribute("aria-current", "page");
   });
   const sbtn = document.querySelector(".sound");
   if (sbtn) {
@@ -72,34 +70,24 @@
       sbtn.setAttribute("aria-pressed", String(soundOn));
       try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch {}
       if (soundOn) tick();
-      toast(soundOn ? "Sound on" : "Sound off");
     });
   }
 
-  /* ---- toast ---- */
-  let toastEl, toastT;
-  function toast(msg) {
-    toastEl ||= Object.assign(document.body.appendChild(document.createElement("div")), { className: "toast", role: "status" });
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
-    clearTimeout(toastT);
-    toastT = setTimeout(() => toastEl.classList.remove("show"), 1400);
-  }
-
-  /* ---- placeholder figure (drawing-style SVG) ---- */
-  function placeholder(label, sub = "PHOTO PENDING", w = 800, h = 600) {
+  /* ---- placeholder image: a soft gradient with a photo glyph, no words ---- */
+  const HUES = [[214, 236], [250, 276], [196, 222], [286, 320], [168, 200]];
+  function placeholder(n = 0, w = 800, h = 600) {
+    const [a, b] = HUES[n % HUES.length];
+    const cx = w / 2, cy = h / 2;
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}'>
-<defs><pattern id='g' width='40' height='40' patternUnits='userSpaceOnUse'><path d='M40 0H0V40' fill='none' stroke='#e4e4de' stroke-width='1'/></pattern></defs>
-<rect width='${w}' height='${h}' fill='#fff'/><rect width='${w}' height='${h}' fill='url(#g)'/>
-<circle cx='${w / 2}' cy='${h / 2 - 20}' r='70' fill='none' stroke='#1d4cff' stroke-width='3'/>
-<path d='M${w / 2 - 110} ${h / 2 - 20}H${w / 2 + 110}M${w / 2} ${h / 2 - 130}V${h / 2 + 90}' stroke='#1d4cff' stroke-width='2' stroke-dasharray='10 8'/>
-<text x='${w / 2}' y='${h - 92}' text-anchor='middle' font-family='monospace' font-size='30' font-weight='bold' fill='#0b0b0c'>${label}</text>
-<text x='${w / 2}' y='${h - 54}' text-anchor='middle' font-family='monospace' font-size='20' letter-spacing='4' fill='#5d5d63'>${sub}</text></svg>`;
+<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl(${a} 70% 94%)'/><stop offset='1' stop-color='hsl(${b} 60% 88%)'/></linearGradient></defs>
+<rect width='${w}' height='${h}' fill='url(#g)'/>
+<g fill='none' stroke='hsl(${a} 25% 62%)' stroke-width='5' stroke-linejoin='round' opacity='.75'>
+<rect x='${cx - 46}' y='${cy - 36}' width='92' height='72' rx='14'/><circle cx='${cx - 16}' cy='${cy - 10}' r='9'/><path d='M${cx - 46} ${cy + 24} l28 -26 22 20 14 -12 28 24'/></g></svg>`;
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const pad = (n) => String(n).padStart(2, "0");
 
-  window.JW = { tick, buzz, toast, placeholder, esc, pad };
+  window.JW = { tick, buzz, placeholder, esc, pad };
 })();

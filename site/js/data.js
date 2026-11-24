@@ -15,7 +15,7 @@
 
 window.SITE = {
   name: "Jacob Wilson",
-  kicker: "Engineering student · UTS, Sydney",
+  kicker: "Engineering · UTS, Sydney",
   email: "thejacobzwilson@gmail.com",
   github: "https://github.com/",          // TODO: your GitHub profile URL
   linkedin: "https://www.linkedin.com/",  // TODO: your LinkedIn profile URL
