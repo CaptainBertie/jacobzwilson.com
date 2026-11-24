@@ -188,6 +188,7 @@ body[data-page="home"] { height: 100svh; overflow: hidden; }
 .tile-title { font-family: var(--serif); font-size: clamp(26px, 2.7vw, 46px); line-height: 1.02; letter-spacing: -.028em; text-wrap: balance; }
 .tile-go { position: absolute; right: clamp(14px, 1.6vw, 24px); bottom: clamp(14px, 1.6vw, 24px); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--bg); transition: transform 320ms var(--out); }
 .tile-go svg { width: 16px; height: 16px; }
+.tile > .tile-logo { position: absolute; left: 10%; right: 10%; top: 0; bottom: 38%; width: 80%; height: 62%; object-fit: contain; z-index: -1; pointer-events: none; }
 .tile--media .tile-go { background: #fff; color: var(--ink); }
 @media (hover: hover) { .tile:hover { transform: scale(1.025); z-index: 2; } .tile:hover > img, .tile:hover > video { transform: scale(1.04); } .tile:hover .tile-go { transform: translateX(4px); } }
 .tile.is-pressed { transform: scale(.985); }

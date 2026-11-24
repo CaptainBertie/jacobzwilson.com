@@ -112,12 +112,14 @@ window.PROJECTS = [
     title: "UNSW Water Pump",
     year: null,
     tags: ["UNSW"],
+    cover: "assets/projects/unsw-water-pump/cover.jpg",
   },
   {
     slug: "tradie-tech",
     title: "Tradie Tech",
     year: "2026",
     tags: ["Software"],
+    logo: "assets/projects/tradie-tech/logo.svg",
     description: ["A web app for tradespeople, built in a design sprint around one job: turning a customer's phone call into a booked job with one tap."],
   },
   {
@@ -136,6 +138,7 @@ window.PROJECTS = [
     year: "2026",
     tags: ["Software", "Live"],
     live: true,
+    cover: "assets/projects/acacia-financial/cover.jpg",
     description: [
       "Acacia is a bot that trades real money on Kalshi, a US exchange where people buy and sell yes-or-no contracts. It trades one question, asked every 15 minutes: will Bitcoin finish the window above a set price? A winning contract pays $1. A losing one pays nothing.",
       "Every second the bot reads the market and the price Kalshi settles on, works out the chance that each side wins, and buys only when the market asks less than that chance is worth. It sizes each bet from its own bankroll, then waits for the window to settle and books the result.",
