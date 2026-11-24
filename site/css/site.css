@@ -246,7 +246,10 @@ body[data-page="home"] { height: 100svh; overflow: hidden; }
 }
 
 .collage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1vw, 14px); }
-.collage .shot { height: auto; max-width: none; width: 100%; background: #fff; }
+/* studio shots on white: each sits on a soft grey card and multiplies into it, so the
+   photo's white turns into the card colour and only the shadow and reflection stay */
+.collage .shot { height: auto; max-width: none; width: 100%; background: var(--tint); isolation: isolate; }
+.collage .shot img { mix-blend-mode: multiply; }
 .collage + .item-text--cols { margin-top: clamp(28px, 3.4vw, 52px); }
 @media (max-width: 599px) { .collage { grid-template-columns: minmax(0, 1fr); } }
 .gallery { margin-top: clamp(40px, 5vw, 80px); }
