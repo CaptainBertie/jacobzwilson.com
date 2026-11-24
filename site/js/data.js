@@ -25,6 +25,9 @@ window.SITE = {
   github: "https://github.com/",          // TODO: your GitHub profile URL
   linkedin: "https://www.linkedin.com/",  // TODO: your LinkedIn profile URL
   headshot: "assets/headshot.jpg",        // missing file -> neutral placeholder
+  // Public read-only feed for the Acacia live panel (Railway service `publicFeed` in the
+  // acacia project). Empty -> the panel is left out and the page shows text only.
+  acaciaFeed: "https://publicfeed-production.up.railway.app/v1/acacia",
   // Home-page clips, played in order behind the Projects tile.
   heroClips: [
     {"src": "assets/projects/frc-2023/cube.mp4", "poster": "assets/projects/frc-2023/cube-1.jpg", "w": 1280, "h": 720},
@@ -56,7 +59,7 @@ window.PROJECTS = [
     year: "2023",
     tags: ["Charged Up", "Team 8840"],
     featured: true,
-    video: {"src": "assets/projects/frc-2023/curated/montage.mp4", "poster": "assets/projects/frc-2023/curated/montage-poster.jpg", "w": 864, "h": 1080},
+    video: {"src": "assets/projects/frc-2023/curated/bay-robotics-hero.mp4", "poster": "assets/projects/frc-2023/curated/bay-robotics-hero-poster.jpg", "w": 1280, "h": 720},
     cover: "assets/projects/frc-2023/curated/team-shirts.jpg",
     gallery: [
       {"src": "assets/projects/frc-2023/curated/team-shirts.jpg", "w": 1600, "h": 1200},
@@ -92,6 +95,7 @@ window.PROJECTS = [
     year: "2024",
     tags: ["Crescendo", "Team 8840"],
     video: {"src": "assets/projects/frc-2024/curated/montage.mp4", "poster": "assets/projects/frc-2024/curated/montage-poster.jpg", "w": 960, "h": 960},
+    split: true,
     cover: "assets/projects/frc-2024/curated/cover.jpg",
     gallery: [
       {"src": "assets/projects/frc-2024/curated/endgame-climb.jpg", "w": 1600, "h": 900},
@@ -108,12 +112,14 @@ window.PROJECTS = [
     title: "UNSW Water Pump",
     year: null,
     tags: ["UNSW"],
+    cover: "assets/projects/unsw-water-pump/cover.jpg",
   },
   {
     slug: "tradie-tech",
     title: "Tradie Tech",
     year: "2026",
     tags: ["Software"],
+    logo: "assets/projects/tradie-tech/logo.svg",
     description: ["A web app for tradespeople, built in a design sprint around one job: turning a customer's phone call into a booked job with one tap."],
   },
   {
@@ -121,13 +127,24 @@ window.PROJECTS = [
     title: "Tri-Filter",
     year: null,
     tags: [],
+    cover: "assets/projects/tri-filter/black-3q.jpg",
+    gallery: [
+      {"src": "assets/projects/tri-filter/black-3q.jpg", "w": 1537, "h": 1023},
+    ],
   },
   {
     slug: "acacia-financial",
     title: "Acacia Financial",
     year: "2026",
-    tags: ["Software"],
-    description: ["A market-data collector and automated trading system for short-dated prediction markets, with its own passkey sign-in service and live dashboards."],
+    tags: ["Software", "Live"],
+    live: true,
+    cover: "assets/projects/acacia-financial/cover.jpg",
+    description: [
+      "Acacia is a bot that trades real money on Kalshi, a US exchange where people buy and sell yes-or-no contracts. It trades one question, asked every 15 minutes: will Bitcoin finish the window above a set price? A winning contract pays $1. A losing one pays nothing.",
+      "Every second the bot reads the market and the price Kalshi settles on, works out the chance that each side wins, and buys only when the market asks less than that chance is worth. It sizes each bet from its own bankroll, then waits for the window to settle and books the result.",
+      "To build it I wrote a recorder that saves every change to the market, so I could replay a month of trading and test each idea before it touched money. The pricing rests on probability and statistics. The bot itself is Python, reads live data over websockets and sends orders within tens of milliseconds. It runs on Railway, keeps its records in cloud storage, and stops itself when a feed goes quiet or losses pile up.",
+    ],
+    tools: "Python, asyncio, SQLite, Parquet, Railway",
   },
   {
     slug: "d-sentry",
@@ -135,6 +152,11 @@ window.PROJECTS = [
     year: "2026",
     tags: ["Mechanical", "Electronics"],
     description: ["A pan-and-tilt rig driven by stepper motors through planetary gearboxes, with flywheel motors run from an L298N driver and an Arduino CNC shield."],
+    cover: "assets/projects/d-sentry/black-front.jpg",
+    gallery: [
+      {"src": "assets/projects/d-sentry/black-front.jpg", "w": 1537, "h": 1023},
+      {"src": "assets/projects/d-sentry/black-switches.jpg", "w": 1537, "h": 1023},
+    ],
   },
 ];
 

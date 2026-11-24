@@ -47,6 +47,7 @@
     const big = i === 0 || (isProjects && it.featured);
     return `<a class="tile${big ? " tile--wide" : ""}${cover ? " tile--media" : ` tile--${TONES[i % TONES.length]}`}" href="#${it.slug}" data-press data-i="${i}">
       ${cover ? `<img src="${esc(cover)}" alt="" loading="${i < 4 ? "eager" : "lazy"}">` : ""}
+      ${!cover && it.logo ? `<img class="tile-logo" src="${esc(it.logo)}" alt="">` : ""}
       ${it.video && cover ? `<video muted loop playsinline preload="none" data-src="${esc(it.video.src)}" aria-hidden="true"></video>` : ""}
       <span class="tile-body"><span class="tile-meta">${tagsH(it)}</span><span class="tile-title">${esc(it.title)}</span></span>
       <span class="tile-go" aria-hidden="true">${icon.arrow}</span>
@@ -97,19 +98,22 @@
   function detail(it, i) {
     document.title = `${it.title} — ${window.SITE.name}`;
     const g = it.gallery || [];
-    const portrait = it.video && ratio(it.video) < 0.95;
+    const portrait = it.video && (ratio(it.video) < 0.95 || it.split);
     const head = `<header class="item-head"><div class="eyebrow">${tagsH(it)}</div><h1 class="display" tabindex="-1">${esc(it.title)}</h1></header>`;
     const body = `${descH(it)}${factsH(it)}${relatedH(it)}`;
-    const empty = !it.video && !g.length && !body;
-    root.innerHTML = `<article class="item${portrait ? " item--portrait" : ""}${it.video ? "" : " item--novideo"}" style="--ar:${ratio(it.video).toFixed(4)}">
+    const live = it.live && window.JW_LIVE ? `<section class="live" aria-label="Live from the bot"></section>` : "";
+    const empty = !it.video && !g.length && !body && !live;
+    root.innerHTML = `<article class="item${portrait ? " item--portrait" : ""}${portrait && it.split ? " item--split-big" : ""}${it.video ? "" : " item--novideo"}" style="--ar:${ratio(it.video).toFixed(4)}">
         ${portrait
           ? `<div class="item-split"><div class="item-media">${videoH(it.video)}</div><div class="item-text">${head}${body}</div></div>`
-          : `${head}${videoH(it.video, "media--hero")}${body ? `<div class="item-text item-text--cols">${body}</div>` : ""}`}
+          : `${head}${videoH(it.video, ratio(it.video) > 1.3 ? "media--hero media--wide" : "media--hero")}${live}${body ? `<div class="item-text item-text--cols">${body}</div>` : ""}`}
         ${empty ? `<p class="soon">Coming soon</p>` : ""}
         ${galleryH(g)}
         ${pagerH(i)}
       </article>`;
     root._gallery = g;
+    const lv = root.querySelector(".live");
+    if (lv) window.JW_LIVE.mount(lv);
     root.querySelectorAll(".rail-x").forEach(wireRail);
     const v = root.querySelector(".media video");
     if (v) {
