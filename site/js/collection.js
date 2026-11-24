@@ -44,7 +44,7 @@
 
   function tileH(it, i) {
     const cover = coverOf(it);
-    const big = i === 0 || (isProjects && it.featured);
+    const big = isProjects ? !!it.featured : i === 0;
     return `<a class="tile${big ? " tile--wide" : ""}${cover ? " tile--media" : ` tile--${TONES[i % TONES.length]}`}" href="#${it.slug}" data-press data-i="${i}">
       ${cover ? `<img src="${esc(cover)}" alt="" loading="${i < 4 ? "eager" : "lazy"}">` : ""}
       ${it.logo ? `<img class="tile-logo" src="${esc(it.logo)}" alt="">` : ""}
@@ -94,6 +94,8 @@
   function overview() {
     document.title = `${isProjects ? "Projects" : "Skills"} — ${window.SITE.name}`;
     root.innerHTML = `<div class="tiles tiles--${kind}">${items.map(tileH).join("")}</div>`;
+    if (!reduce) root.querySelectorAll(".tile video").forEach((v) => tileIO.observe(v));
+    root.querySelectorAll(".tile-logo").forEach((l) => logoRO.observe(l.parentElement));
   }
   function detail(it, i) {
     document.title = `${it.title} — ${window.SITE.name}`;
@@ -188,18 +190,18 @@
     const shot = e.target.closest(".shot");
     if (shot && !shot.closest(".rail-x").dataset.moved) lightbox.open(root._gallery, +shot.dataset.n);
   });
-  // tiles: preview the clip on hover (pointer devices only)
-  root.addEventListener("pointerover", (e) => {
-    if (reduce || e.pointerType !== "mouse") return;
-    const v = e.target.closest(".tile")?.querySelector("video"); if (!v || v._on) return;
-    v._on = true; if (!v.src) v.src = v.dataset.src;
-    v.play().then(() => v.classList.add("on")).catch(() => {});
-  });
-  root.addEventListener("pointerout", (e) => {
-    const tile = e.target.closest(".tile"); if (!tile || tile.contains(e.relatedTarget)) return;
-    const v = tile.querySelector("video"); if (!v) return;
-    v._on = false; v.classList.remove("on"); v.pause();
-  });
+  // tile logos sit centred between the top of the tile and the top of its title
+  const logoRO = new ResizeObserver((es) => es.forEach(({ target: t }) => {
+    const l = t.querySelector(".tile-logo"), h = t.querySelector(".tile-title"); if (!l || !h || !t.isConnected) return;
+    l.style.bottom = "auto";
+    l.style.height = `${h.getBoundingClientRect().top - t.getBoundingClientRect().top}px`;
+  }));
+  // tiles: play the clip whenever the tile is on screen, pause it when it scrolls away
+  const tileIO = new IntersectionObserver((es) => es.forEach(({ target: v, isIntersecting: on }) => {
+    if (!v.isConnected) return tileIO.unobserve(v);
+    if (on) { if (!v.src) v.src = v.dataset.src; v.play().then(() => v.classList.add("on")).catch(() => {}); }
+    else { v.classList.remove("on"); v.pause(); }
+  }), { threshold: 0.25 });
 
   /* gallery rail: mouse drag to scroll, paddles enable/disable at the ends */
   function wireRail(r) {
