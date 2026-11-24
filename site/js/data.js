@@ -27,7 +27,7 @@ window.SITE = {
   headshot: "assets/headshot.jpg",        // missing file -> neutral placeholder
   // Public read-only feed for the Acacia live panel (Railway service `publicFeed` in the
   // acacia project). Empty -> the panel is left out and the page shows text only.
-  acaciaFeed: "",
+  acaciaFeed: "https://publicfeed-production.up.railway.app/v1/acacia",
   // Home-page clips, played in order behind the Projects tile.
   heroClips: [
     {"src": "assets/projects/frc-2023/cube.mp4", "poster": "assets/projects/frc-2023/cube-1.jpg", "w": 1280, "h": 720},
@@ -94,7 +94,8 @@ window.PROJECTS = [
     title: "FIRST Robotics 2024",
     year: "2024",
     tags: ["Crescendo", "Team 8840"],
-    video: {"src": "assets/projects/frc-2024/curated/hero.mp4", "poster": "assets/projects/frc-2024/curated/hero-poster.jpg", "w": 1280, "h": 720},
+    video: {"src": "assets/projects/frc-2024/curated/montage.mp4", "poster": "assets/projects/frc-2024/curated/montage-poster.jpg", "w": 960, "h": 960},
+    split: true,
     cover: "assets/projects/frc-2024/curated/cover.jpg",
     gallery: [
       {"src": "assets/projects/frc-2024/curated/endgame-climb.jpg", "w": 1600, "h": 900},

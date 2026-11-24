@@ -97,12 +97,12 @@
   function detail(it, i) {
     document.title = `${it.title} — ${window.SITE.name}`;
     const g = it.gallery || [];
-    const portrait = it.video && ratio(it.video) < 0.95;
+    const portrait = it.video && (ratio(it.video) < 0.95 || it.split);
     const head = `<header class="item-head"><div class="eyebrow">${tagsH(it)}</div><h1 class="display" tabindex="-1">${esc(it.title)}</h1></header>`;
     const body = `${descH(it)}${factsH(it)}${relatedH(it)}`;
     const live = it.live && window.JW_LIVE ? `<section class="live" aria-label="Live from the bot"></section>` : "";
     const empty = !it.video && !g.length && !body && !live;
-    root.innerHTML = `<article class="item${portrait ? " item--portrait" : ""}${it.video ? "" : " item--novideo"}" style="--ar:${ratio(it.video).toFixed(4)}">
+    root.innerHTML = `<article class="item${portrait ? " item--portrait" : ""}${portrait && it.split ? " item--split-big" : ""}${it.video ? "" : " item--novideo"}" style="--ar:${ratio(it.video).toFixed(4)}">
         ${portrait
           ? `<div class="item-split"><div class="item-media">${videoH(it.video)}</div><div class="item-text">${head}${body}</div></div>`
           : `${head}${videoH(it.video, ratio(it.video) > 1.3 ? "media--hero media--wide" : "media--hero")}${live}${body ? `<div class="item-text item-text--cols">${body}</div>` : ""}`}

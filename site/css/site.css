@@ -233,11 +233,12 @@ body[data-page="home"] { height: 100svh; overflow: hidden; }
 .soon { font-family: var(--serif); font-style: italic; font-size: clamp(22px, 2vw, 30px); color: var(--ink-3); }
 
 .item-split { display: grid; grid-template-columns: min(clamp(260px, 36vw, 520px), calc((100svh - var(--chrome) - 48px) * var(--ar, .6))) minmax(0, 1fr); gap: clamp(24px, 5vw, 88px); align-items: start; }
+.item--split-big .item-split { grid-template-columns: min(clamp(300px, 54vw, 860px), calc((100svh - var(--chrome) - 48px) * var(--ar, 1))) minmax(280px, 1fr); }
 .item-split .item-media { position: sticky; top: calc(var(--chrome) + 24px); }
 .item-split .display { font-size: clamp(44px, 6vw, 104px); }
 @media (max-width: 859px) {
   .item-text--cols { grid-template-columns: minmax(0, 1fr); }
-  .item-split { grid-template-columns: minmax(0, 1fr); }
+  .item-split, .item--split-big .item-split { grid-template-columns: minmax(0, 1fr); }
   .item-split .item-media { position: static; order: 2; }
   .item-split .media { max-width: calc(80svh * var(--ar, .6)); margin-inline: auto; }
 }
