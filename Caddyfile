@@ -1,0 +1,26 @@
+{
+	admin off
+	auto_https off
+}
+
+:{$PORT:8080} {
+	@www host www.jacobzwilson.com
+	redir @www https://jacobzwilson.com{uri} permanent
+
+	root * /srv
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	@media path *.jpg *.jpeg *.png *.webp *.mp4 *.woff2
+	header @media Cache-Control "public, max-age=604800"
+	@code path *.html *.css *.js /
+	header @code Cache-Control "no-cache"
+	file_server
+	handle_errors {
+		rewrite * /index.html
+		file_server
+	}
+}

@@ -2,3 +2,7 @@
 # raw footage stays out of git (too large); compressed copies go in site/assets
 Media/
 .playwright-mcp/
+.env
+.env.*
+*.pem
+*.key
