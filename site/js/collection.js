@@ -75,10 +75,16 @@
     const links = (it.related || []).filter((s) => bySlug[s]).map((s) => `<a class="btn btn--quiet" data-press href="projects.html#${s}">${esc(bySlug[s].title)}${icon.chev}</a>`).join("");
     return links ? `<div class="related">${links}</div>` : "";
   }
-  function galleryH(g) {
+  // hero photos: a row of stills under the title, in place of a video
+  function collageH(h, total) {
+    if (!h.length) return "";
+    return `<section class="collage" aria-label="Photos">${h.map((m, n) => `<button class="shot shot--collage" data-n="${n}" data-press style="aspect-ratio:${m.w || 3}/${m.h || 2}" aria-label="Open photo ${n + 1} of ${total}">
+        <img src="${esc(m.src)}" alt="${esc(m.caption || "")}" decoding="async"></button>`).join("")}</section>`;
+  }
+  function galleryH(g, off = 0, total = g.length) {
     if (!g.length) return "";
     return `<section class="gallery" aria-label="Gallery">
-      <div class="rail-x">${g.map((m, n) => `<button class="shot" data-n="${n}" data-press style="--ar:${((m.w || 4) / (m.h || 3)).toFixed(4)};aspect-ratio:${m.w || 4}/${m.h || 3}" aria-label="Open ${m.video ? "clip" : "photo"} ${n + 1} of ${g.length}">
+      <div class="rail-x">${g.map((m, i) => [m, i + off]).map(([m, n]) => `<button class="shot" data-n="${n}" data-press style="--ar:${((m.w || 4) / (m.h || 3)).toFixed(4)};aspect-ratio:${m.w || 4}/${m.h || 3}" aria-label="Open ${m.video ? "clip" : "photo"} ${n + 1} of ${total}">
           <img src="${esc(m.poster || m.src)}" alt="${esc(m.caption || "")}" loading="lazy" decoding="async">${m.video ? `<span class="playbadge playbadge--sm">${icon.play}</span>` : ""}</button>`).join("")}</div>
       <div class="paddles"><button class="paddle" data-g="-1" data-press aria-label="Previous">${icon.left}</button><button class="paddle" data-g="1" data-press aria-label="Next">${icon.right}</button></div>
     </section>`;
@@ -100,20 +106,22 @@
   function detail(it, i) {
     document.title = `${it.title} — ${window.SITE.name}`;
     const g = it.gallery || [];
+    const hero = it.video ? [] : (it.hero || []);
+    const all = [...hero, ...g];
     const portrait = it.video && (ratio(it.video) < 0.95 || it.split);
     const head = `<header class="item-head"><div class="eyebrow">${tagsH(it)}</div><h1 class="display" tabindex="-1">${esc(it.title)}</h1></header>`;
     const body = `${descH(it)}${factsH(it)}${relatedH(it)}`;
     const live = it.live && window.JW_LIVE ? `<section class="live" aria-label="Live from the bot"></section>` : "";
-    const empty = !it.video && !g.length && !body && !live;
+    const empty = !it.video && !all.length && !body && !live;
     root.innerHTML = `<article class="item${portrait ? " item--portrait" : ""}${portrait && it.split ? " item--split-big" : ""}${it.video ? "" : " item--novideo"}" style="--ar:${ratio(it.video).toFixed(4)}">
         ${portrait
           ? `<div class="item-split"><div class="item-media">${videoH(it.video)}</div><div class="item-text">${head}${body}</div></div>`
-          : `${head}${videoH(it.video, ratio(it.video) > 1.3 ? "media--hero media--wide" : "media--hero")}${live}${body ? `<div class="item-text item-text--cols">${body}</div>` : ""}`}
+          : `${head}${videoH(it.video, ratio(it.video) > 1.3 ? "media--hero media--wide" : "media--hero")}${collageH(hero, all.length)}${live}${body ? `<div class="item-text item-text--cols">${body}</div>` : ""}`}
         ${empty ? `<p class="soon">Coming soon</p>` : ""}
-        ${galleryH(g)}
+        ${galleryH(g, hero.length, all.length)}
         ${pagerH(i)}
       </article>`;
-    root._gallery = g;
+    root._gallery = all;
     const lv = root.querySelector(".live");
     if (lv) window.JW_LIVE.mount(lv);
     root.querySelectorAll(".rail-x").forEach(wireRail);
@@ -188,7 +196,7 @@
     const pd = e.target.closest("[data-g]");
     if (pd) { const r = pd.closest(".gallery").querySelector(".rail-x"); r.scrollBy({ left: +pd.dataset.g * r.clientWidth * 0.8, behavior: reduce ? "auto" : "smooth" }); return; }
     const shot = e.target.closest(".shot");
-    if (shot && !shot.closest(".rail-x").dataset.moved) lightbox.open(root._gallery, +shot.dataset.n);
+    if (shot && !shot.closest(".rail-x")?.dataset.moved) lightbox.open(root._gallery, +shot.dataset.n);
   });
   // tile logos sit centred between the top of the tile and the top of its title
   const logoRO = new ResizeObserver((es) => es.forEach(({ target: t }) => {

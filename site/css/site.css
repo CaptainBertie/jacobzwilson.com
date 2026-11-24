@@ -245,6 +245,10 @@ body[data-page="home"] { height: 100svh; overflow: hidden; }
   .item-split .media { max-width: calc(80svh * var(--ar, .6)); margin-inline: auto; }
 }
 
+.collage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1vw, 14px); }
+.collage .shot { height: auto; max-width: none; width: 100%; background: #fff; }
+.collage + .item-text--cols { margin-top: clamp(28px, 3.4vw, 52px); }
+@media (max-width: 599px) { .collage { grid-template-columns: minmax(0, 1fr); } }
 .gallery { margin-top: clamp(40px, 5vw, 80px); }
 .rail-x { display: flex; gap: clamp(8px, 1vw, 14px); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; margin: 0 calc(-1 * var(--gut)); padding: 6px var(--gut); scroll-padding: 0 var(--gut); cursor: grab; }
 .rail-x::-webkit-scrollbar { display: none; }

@@ -97,7 +97,12 @@ window.PROJECTS = [
     title: "Drone Guide",
     year: null,
     tags: [],
-    cover: "assets/projects/drone-guide/curated/cover.jpg",
+    cover: "assets/projects/drone-guide/ai-3.jpg",
+    hero: [
+      {"src": "assets/projects/drone-guide/ai-1.jpg", "w": 2000, "h": 1332},
+      {"src": "assets/projects/drone-guide/ai-2.jpg", "w": 2000, "h": 1332},
+      {"src": "assets/projects/drone-guide/ai-3.jpg", "w": 2000, "h": 1332},
+    ],
     gallery: [
       {"src": "assets/projects/drone-guide/curated/drone-5249.jpg", "w": 1600, "h": 900},
       {"src": "assets/projects/drone-guide/curated/drone-5084.jpg", "w": 1600, "h": 900},
