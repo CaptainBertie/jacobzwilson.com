@@ -94,7 +94,7 @@ window.PROJECTS = [
     title: "FIRST Robotics 2024",
     year: "2024",
     tags: ["Crescendo", "Team 8840"],
-    video: {"src": "assets/projects/frc-2024/curated/montage.mp4", "poster": "assets/projects/frc-2024/curated/montage-poster.jpg", "w": 960, "h": 960},
+    video: {"src": "assets/projects/frc-2024/curated/hero.mp4", "poster": "assets/projects/frc-2024/curated/hero-poster.jpg", "w": 1280, "h": 720},
     cover: "assets/projects/frc-2024/curated/cover.jpg",
     gallery: [
       {"src": "assets/projects/frc-2024/curated/endgame-climb.jpg", "w": 1600, "h": 900},
