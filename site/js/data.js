@@ -103,14 +103,6 @@ window.PROJECTS = [
       {"src": "assets/projects/drone-guide/ai-2.jpg", "w": 2000, "h": 1332},
       {"src": "assets/projects/drone-guide/ai-3.jpg", "w": 2000, "h": 1332},
     ],
-    gallery: [
-      {"src": "assets/projects/drone-guide/curated/drone-5249.jpg", "w": 1600, "h": 900},
-      {"src": "assets/projects/drone-guide/curated/drone-5084.jpg", "w": 1600, "h": 900},
-      {"src": "assets/projects/drone-guide/curated/drone-5251.jpg", "w": 1600, "h": 900},
-      {"src": "assets/projects/drone-guide/curated/drone-5253.jpg", "w": 1600, "h": 900},
-      {"src": "assets/projects/drone-guide/curated/drone-5250.jpg", "w": 1600, "h": 900},
-      {"src": "assets/projects/drone-guide/curated/drone-5256.jpg", "w": 1600, "h": 1600},
-    ],
   },
   {
     slug: "unsw-water-pump",
