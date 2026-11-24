@@ -151,10 +151,11 @@ window.PROJECTS = [
     year: "2026",
     tags: ["Mechanical", "Electronics"],
     description: ["A pan-and-tilt rig driven by stepper motors through planetary gearboxes, with flywheel motors run from an L298N driver and an Arduino CNC shield."],
-    cover: "assets/projects/d-sentry/black-front.jpg",
-    gallery: [
-      {"src": "assets/projects/d-sentry/black-front.jpg", "w": 1537, "h": 1023},
-      {"src": "assets/projects/d-sentry/black-switches.jpg", "w": 1537, "h": 1023},
+    cover: "assets/projects/d-sentry/ai-1.jpg",
+    hero: [
+      {"src": "assets/projects/d-sentry/ai-1.jpg", "w": 2000, "h": 1501},
+      {"src": "assets/projects/d-sentry/ai-2.jpg", "w": 2000, "h": 1501},
+      {"src": "assets/projects/d-sentry/ai-3.jpg", "w": 2000, "h": 1501},
     ],
   },
 ];
