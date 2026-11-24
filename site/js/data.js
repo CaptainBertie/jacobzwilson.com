@@ -25,6 +25,9 @@ window.SITE = {
   github: "https://github.com/",          // TODO: your GitHub profile URL
   linkedin: "https://www.linkedin.com/",  // TODO: your LinkedIn profile URL
   headshot: "assets/headshot.jpg",        // missing file -> neutral placeholder
+  // Public read-only feed for the Acacia live panel (Railway service `publicFeed` in the
+  // acacia project). Empty -> the panel is left out and the page shows text only.
+  acaciaFeed: "",
   // Home-page clips, played in order behind the Projects tile.
   heroClips: [
     {"src": "assets/projects/frc-2023/cube.mp4", "poster": "assets/projects/frc-2023/cube-1.jpg", "w": 1280, "h": 720},
@@ -126,8 +129,14 @@ window.PROJECTS = [
     slug: "acacia-financial",
     title: "Acacia Financial",
     year: "2026",
-    tags: ["Software"],
-    description: ["A market-data collector and automated trading system for short-dated prediction markets, with its own passkey sign-in service and live dashboards."],
+    tags: ["Software", "Live"],
+    live: true,
+    description: [
+      "Acacia is a bot that trades real money on Kalshi, a US exchange where people buy and sell yes-or-no contracts. It trades one question, asked every 15 minutes: will Bitcoin finish the window above a set price? A winning contract pays $1. A losing one pays nothing.",
+      "Every second the bot reads the market and the price Kalshi settles on, works out the chance that each side wins, and buys only when the market asks less than that chance is worth. It sizes each bet from its own bankroll, then waits for the window to settle and books the result.",
+      "To build it I wrote a recorder that saves every change to the market, so I could replay a month of trading and test each idea before it touched money. The pricing rests on probability and statistics. The bot itself is Python, reads live data over websockets and sends orders within tens of milliseconds. It runs on Railway, keeps its records in cloud storage, and stops itself when a feed goes quiet or losses pile up.",
+    ],
+    tools: "Python, asyncio, SQLite, Parquet, Railway",
   },
   {
     slug: "d-sentry",
