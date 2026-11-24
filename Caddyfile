@@ -7,6 +7,18 @@
 	@www host www.jacobzwilson.com
 	redir @www https://jacobzwilson.com{uri} permanent
 
+	# Production apex shows only the coming-soon page; dev.jacobzwilson.com keeps the full site.
+	@soon_other {
+		host jacobzwilson.com
+		not path / /coming-soon.html
+	}
+	redir @soon_other / 302
+	@soon_root {
+		host jacobzwilson.com
+		path /
+	}
+	rewrite @soon_root /coming-soon.html
+
 	root * /srv
 	encode zstd gzip
 	header {
