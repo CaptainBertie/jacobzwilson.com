@@ -28,11 +28,9 @@ window.SITE = {
   // Public read-only feed for the Acacia live panel (Railway service `publicFeed` in the
   // acacia project). Empty -> the panel is left out and the page shows text only.
   acaciaFeed: "https://publicfeed-production.up.railway.app/v1/acacia",
-  // Home-page clips, played in order behind the Projects tile.
+  // Home-page reel behind the Projects tile: one 45 s square loop of the 17 shots Jacob picked.
   heroClips: [
-    {"src": "assets/projects/frc-2023/cube.mp4", "poster": "assets/projects/frc-2023/cube-1.jpg", "w": 1280, "h": 720},
-    {"src": "assets/hero/workshop.mp4", "poster": "assets/hero/workshop-1.jpg", "w": 1280, "h": 720},
-    {"src": "assets/projects/frc-2023/intake.mp4", "poster": "assets/projects/frc-2023/intake-1.jpg", "w": 916, "h": 522},
+    {"src": "assets/hero/reel.mp4?v=11", "poster": "assets/hero/reel-poster.jpg", "w": 864, "h": 864},
   ],
 };
 
