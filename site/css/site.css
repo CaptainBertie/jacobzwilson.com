@@ -174,7 +174,7 @@ body[data-page="home"] { height: 100svh; overflow: hidden; }
 
 .tiles { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-rows: clamp(230px, 27vw, 430px); gap: clamp(10px, 1.2vw, 18px); }
 .tile { grid-column: span 4; position: relative; display: flex; flex-direction: column; justify-content: flex-end; border-radius: var(--r-tile); overflow: hidden; isolation: isolate; background: var(--tint); transition: transform 240ms var(--spring); touch-action: manipulation; }
-.tiles--projects .tile:nth-child(2), .tiles--projects .tile:nth-child(3), .tiles--projects .tile:nth-child(6) { grid-column: span 8; }
+.tiles--projects .tile:nth-child(4), .tiles--projects .tile:nth-child(7), .tiles--projects .tile:nth-child(8) { grid-column: span 8; }
 .tiles--skills .tile:nth-child(-n+2) { grid-column: span 6; }
 .tile--sky { background: var(--sky); } .tile--oat { background: var(--oat); } .tile--olive { background: var(--olive); } .tile--fig { background: var(--fig); } .tile--clay { background: var(--peach); }
 .tile > img, .tile > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 1.2s var(--out), opacity 500ms var(--ease); }
